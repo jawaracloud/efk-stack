@@ -1,0 +1,86 @@
+version: "3.8"
+services:
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.13.4
+    restart: always
+    container_name: elasticsearch
+    ports:
+      - 9200:9200
+      - 9300:9300
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+    networks:
+      - efk-network
+    volumes:
+      - elastic_data:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9200"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.13.4
+    restart: always
+    container_name: kibana
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    ports:
+      - 5601:5601
+    networks:
+      - efk-network
+    depends_on:
+      - elasticsearch
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5601"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  nginx:
+    image: nginx:1.26.0-alpine
+    restart: always
+    container_name: nginx
+    ports:
+      - 8080:80
+    networks:
+      - efk-network
+    volumes:
+      - ./nginx_logs:/var/log/nginx
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  fluent_bit:
+    image: fluent/fluent-bit:3.0.6
+    restart: always
+    container_name: fluent_bit
+    volumes:
+      - ./fluent-bit.conf:/fluent-bit/etc/fluent-bit.conf
+      - ./parsers.conf:/fluent-bit/parsers.conf
+      - ./nginx_logs:/var/log/nginx
+    command:
+      [
+        "fluent-bit",
+        "-c",
+        "/fluent-bit/etc/fluent-bit.conf",
+        "-R",
+        "/fluent-bit/parsers.conf",
+      ]
+    networks:
+      - efk-network
+    depends_on:
+      - elasticsearch
+      - kibana
+      - nginx
+
+networks:
+  efk-network:
+    driver: bridge
+volumes:
+  elastic_data:
+    name: elastic_data
+    driver: local
