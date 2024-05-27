@@ -56,8 +56,8 @@ services:
     restart: always
     container_name: fluent_bit
     volumes:
-      - ./fluent-bit.conf:/fluent-bit/etc/fluent-bit.conf
-      - ./parsers.conf:/fluent-bit/parsers.conf
+      - ./fluent-bit/fluent-bit.conf:/fluent-bit/etc/fluent-bit.conf
+      - ./fluent-bit/parsers.conf:/fluent-bit/parsers.conf
       - ./nginx_logs:/var/log/nginx
     command:
       [
