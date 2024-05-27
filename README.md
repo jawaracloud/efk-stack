@@ -1,4 +1,4 @@
-# efk-network Stack
+# EFK Monitoring Stack
 Log Monitoring with Elasticsearch, Fluent-bit, Kibana
 
 ![The Flow of EFK Stack !](/assets/flow.gif "The Flow of EFK Stack ")
