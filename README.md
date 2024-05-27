@@ -6,7 +6,6 @@ Log Monitoring with Elasticsearch, Fluent-bit, Kibana
 ## Create Docker Network and Volume
 ```bash
 docker network create efk-network --driver bridge
-docker volume create nginx_logs --driver local
 docker volume create elastic_data --driver local
 ```
 
@@ -26,6 +25,7 @@ nginx:1.26.0-alpine
 docker run -d \
 --name fluent_bit \
 --restart always \
+--network efk-network \
 -v $(pwd)/fluent-bit.conf:/fluent-bit/etc/fluent-bit.conf \
 -v $(pwd)/parsers.conf:/fluent-bit/parsers.conf \
 -v $(pwd)/nginx_logs:/var/log/nginx \
